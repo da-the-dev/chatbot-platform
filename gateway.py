@@ -7,8 +7,14 @@ from opentelemetry.instrumentation.kafka import KafkaInstrumentor
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import redis.asyncio as redis  # Async Redis client
+from faststream.kafka.opentelemetry import KafkaTelemetryMiddleware
+from telemetry import setup_telemetry
 
-broker = KafkaBroker("localhost:9092")
+tracer_provider = setup_telemetry("chat-gateway")
+broker = KafkaBroker(
+    "localhost:9092",
+    middlewares=[KafkaTelemetryMiddleware(tracer_provider=tracer_provider)],
+)
 
 
 @asynccontextmanager
@@ -29,20 +35,22 @@ KafkaInstrumentor().instrument()
 
 
 class MSG(BaseModel):
-    prompt: str 
+    prompt: str
+
 
 @app.post("/chat")
 async def chat(msg: MSG):
     # The 'producer.send' will automatically include the Trace ID
     # from the current HTTP request into the Kafka headers.
-    # correlation_id = str(uuid.uuid4())
-    correlation_id = "stream:req_123"
-    await broker.publish(msg.prompt, topic="chat.incoming", correlation_id=correlation_id)
+    correlation_id = str(uuid.uuid4())
+    await broker.publish(
+        msg.prompt, topic="chat.incoming", correlation_id=correlation_id
+    )
     return {"status": "sent", "correlation_id": correlation_id}
-
-
 async def stream_generator(request_id: str):
-    r = redis.Redis(host="localhost", port=6379, decode_responses=True, password='yourpassword')
+    r = redis.Redis(
+        host="localhost", port=6379, decode_responses=True, password="yourpassword"
+    )
     pubsub = r.pubsub()
     await pubsub.subscribe(f"stream:{request_id}")
 

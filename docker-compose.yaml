@@ -31,11 +31,13 @@ services:
       - "4317:4317" # OTLP gRPC receiver
 
   jaeger:
-    image: jaegertracing/all-in-one:latest
+    image: cr.jaegertracing.io/jaegertracing/jaeger:2.15.0
     ports:
       - "6831:6831/udp" # UDP port for Jaeger agent
       - "16686:16686" # Web UI
       - "14268:14268" # HTTP port for spans
+    depends_on:
+      - otel-collector
 
   prometheus:
     image: prom/prometheus:latest
@@ -43,6 +45,8 @@ services:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yaml
     ports:
       - "9090:9090"
+    depends_on:
+      - otel-collector
 
   redis:
     image: redis:7.4-alpine
