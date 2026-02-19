@@ -15,7 +15,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
 
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
@@ -50,12 +50,38 @@ services:
 
   redis:
     image: redis:7.4-alpine
+    container_name: redis
     restart: always
     ports:
       - "6379:6379"
     command: redis-server --save 20 1 --loglevel warning --requirepass yourpassword
     volumes:
       - cache:/data
+
+  gateway:
+    container_name: gateway
+    build:
+      context: .
+      dockerfile: gateway.Dockerfile
+    ports:
+      - "8000:8000"
+    env_file: .env.prod
+
+  inference_worker:
+    container_name: inference_worker
+    build:
+      context: .
+      dockerfile: inference_worker.Dockerfile
+    env_file: .env.prod
+
+  streamlit:
+    container_name: streamlit
+    build:
+      context: .
+      dockerfile: streamlit.Dockerfile
+    ports:
+      - "8501:8501"    
+    env_file: .env.prod
 
 volumes:
   kafka_raft:

@@ -6,11 +6,12 @@ from faststream.confluent import KafkaBroker, KafkaMessage
 from faststream.kafka.opentelemetry import KafkaTelemetryMiddleware
 from opentelemetry.instrumentation.kafka import KafkaInstrumentor
 from opentelemetry import trace
-from telemetry import setup_telemetry
+from src.settings import settings
+from src.telemetry import setup_telemetry
 
 
 broker = KafkaBroker(
-    "localhost:9092",
+    settings.kafka.bootstrap_servers,
     middlewares=[
         KafkaTelemetryMiddleware(tracer_provider=setup_telemetry("inference-worker"))
     ],
@@ -19,14 +20,22 @@ broker = KafkaBroker(
 
 @asynccontextmanager
 async def lifespan(context: ContextRepo):
+    global settings
     KafkaInstrumentor().instrument()
 
-    redis_client = redis.Redis(password="yourpassword")
+    context.set_global("broker", broker)
+
+    redis_client = redis.Redis(
+        host=settings.redis.host,
+        port=settings.redis.port,
+        password=settings.redis.password,
+    )
     context.set_global("redis_client", redis_client)
 
     yield
 
     redis_client.close()
+    await broker.stop()
 
 
 app = FastStream(broker, lifespan=lifespan)
