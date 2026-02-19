@@ -19,7 +19,6 @@ broker = KafkaBroker(
 
 @asynccontextmanager
 async def lifespan(context: ContextRepo):
-    global settings
     KafkaInstrumentor().instrument()
 
     context.set_global('broker', broker)

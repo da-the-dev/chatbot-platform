@@ -3,22 +3,29 @@ import sys
 
 # Add the project root to Python path
 project_root = pathlib.Path(__file__).parent.parent.parent
-print(project_root)
 sys.path.append(str(project_root))
 
 import datetime
-import streamlit as st
+
 import requests
+import streamlit as st
+
 from src.settings import settings
 
 
 def get_stream(prompt):
-    response = requests.post(f'http://{settings.gateway.url}/chat', json={'prompt': prompt})
+    response = requests.post(
+        f'http://{settings.gateway.url}/chat',
+        json={'prompt': prompt},
+    )
 
     request_id = response.json()['correlation_id']
 
     # Receive
-    with requests.get(f'http://{settings.gateway.url}/stream/{request_id}', stream=True) as r:
+    with requests.get(
+        f'http://{settings.gateway.url}/stream/{request_id}',
+        stream=True,
+    ) as r:
         for line in r.iter_lines():
             if line:
                 decoded = line.decode('utf-8')

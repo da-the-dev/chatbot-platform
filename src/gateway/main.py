@@ -1,7 +1,7 @@
 import uuid
 from contextlib import asynccontextmanager
 
-import redis.asyncio as redis  # Async Redis client
+import redis.asyncio as redis
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from faststream.confluent import KafkaBroker
@@ -12,8 +12,6 @@ from pydantic import BaseModel
 
 from src.settings import settings
 from src.telemetry import setup_telemetry
-
-print(settings.kafka.bootstrap_servers)
 
 tracer_provider = setup_telemetry('chat-gateway')
 broker = KafkaBroker(
