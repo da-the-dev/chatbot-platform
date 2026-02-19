@@ -9,7 +9,7 @@ from src.settings import settings
 
 def setup_telemetry(service_name: str):
     # 1. Define the Service Name (appears in Jaeger)
-    resource = Resource.create({"service.name": service_name})
+    resource = Resource.create({'service.name': service_name})
 
     # 2. Setup the Provider
     tracer_provider = TracerProvider(resource=resource)
@@ -17,9 +17,7 @@ def setup_telemetry(service_name: str):
 
     # 3. Setup the Exporter (Sends data to Jaeger/Tempo)
     # Assumes Jaeger is running on localhost:4317
-    otlp_exporter = OTLPSpanExporter(
-        endpoint=f"{settings.otel.span_exporter_endpoint}", insecure=True
-    )
+    otlp_exporter = OTLPSpanExporter(endpoint=f'{settings.otel.span_exporter_endpoint}', insecure=True)
 
     # 4. Add the Processor (Batches spans for performance)
     span_processor = BatchSpanProcessor(otlp_exporter)
