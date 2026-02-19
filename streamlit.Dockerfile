@@ -18,7 +18,7 @@ WORKDIR /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --no-install-project
+    uv sync --locked --group streamlit --no-install-project
 
 COPY src/streamlit_ui /app/src/streamlit_ui
 COPY src/settings /app/src/settings
@@ -27,7 +27,7 @@ COPY uv.lock /app
 COPY pyproject.toml /app
 
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked
+    uv sync --group streamlit --locked
 
 # Then, use a final image without uv
 FROM python:3.12-slim-bookworm
