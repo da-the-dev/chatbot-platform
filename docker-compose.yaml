@@ -66,6 +66,10 @@ services:
     ports:
       - "8000:8000"
     env_file: .env.prod
+    depends_on:
+      - kafka
+      - otel_collector
+      - redis
 
   inference_worker:
     container_name: inference_worker
@@ -73,6 +77,10 @@ services:
       context: .
       dockerfile: inference_worker.Dockerfile
     env_file: .env.prod
+    depends_on:
+      - kafka
+      - otel_collector
+      - redis
 
   streamlit:
     container_name: streamlit
@@ -82,6 +90,9 @@ services:
     ports:
       - "8501:8501"    
     env_file: .env.prod
+    depends_on:
+      - kafka
+      - otel_collector
 
 volumes:
   kafka_raft:
