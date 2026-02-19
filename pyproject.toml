@@ -68,6 +68,9 @@ streamlit = [
     {include-group = "shared"},
     "streamlit>=1.54.0",
 ]
+dev = [
+    "ruff>=0.15.1",
+]
 
 [tool.ruff]
 line-length = 120
