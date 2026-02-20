@@ -68,7 +68,7 @@ services:
     env_file: .env.prod
     depends_on:
       - kafka
-      - otel_collector
+      - otel-collector
       - redis
 
   inference_worker:
@@ -79,7 +79,7 @@ services:
     env_file: .env.prod
     depends_on:
       - kafka
-      - otel_collector
+      - otel-collector
       - redis
 
   streamlit:
@@ -92,7 +92,7 @@ services:
     env_file: .env.prod
     depends_on:
       - kafka
-      - otel_collector
+      - otel-collector
 
 volumes:
   kafka_raft:
