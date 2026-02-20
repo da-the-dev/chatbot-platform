@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Inference worker",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "faststream",
+            "args": [
+                "run",
+                "src.inference_worker.main:app",
+            ],
+        }
+    ]
+}
