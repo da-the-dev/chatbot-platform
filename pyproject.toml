@@ -61,6 +61,7 @@ inference_worker = [
     {include-group = "faststream"},
     {include-group = "kafka"},
     {include-group = "shared"},
+    "ollama>=0.6.1",
     "redis>=7.2.0",
 ]
 

@@ -1,15 +1,20 @@
 import asyncio
 from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING
 
 import redis
 from faststream import Context, ContextRepo, FastStream
 from faststream.confluent import KafkaBroker, KafkaMessage
 from faststream.kafka.opentelemetry import KafkaTelemetryMiddleware
+from ollama import ChatResponse, chat
 from opentelemetry import trace
 from opentelemetry.instrumentation.kafka import KafkaInstrumentor
 
 from src.settings import settings
 from src.telemetry import setup_telemetry
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 broker = KafkaBroker(
     settings.kafka.bootstrap_servers,
@@ -48,6 +53,22 @@ async def stream_tokens(input: str):
         yield t + ' '
 
 
+async def ask_llm(input: str):
+    response: Iterator[ChatResponse] = chat(
+        model='gemma3',
+        messages=[
+            {
+                'role': 'user',
+                'content': input,
+            },
+        ],
+        stream=True,
+    )
+
+    for t in response:
+        yield t.message.content
+
+
 @broker.subscriber('chat.incoming', auto_offset_reset='earliest')
 async def process_request(
     body: str,
@@ -58,7 +79,7 @@ async def process_request(
     request_id = msg.headers['correlation_id']
 
     with tracer.start_span('vllm_generation'):
-        async for token in stream_tokens(body):
+        async for token in ask_llm(body):
             # with tracer.start_span('redis_publish_'):
             redis_client.publish(f'stream:{request_id}', token)
 
