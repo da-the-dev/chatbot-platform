@@ -4,6 +4,12 @@ services:
     container_name: kafka
     ports:
       - "9092:9092"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s"9092:9092"
     environment:
       KAFKA_KRAFT_MODE: "true"
 
